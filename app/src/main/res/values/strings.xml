@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">OpenJTalk</string>
+    <string name="button.talk">Talk</string>
+    <string name="label.loading">Loading...</string>
+    <string name="message.initialize.error">Initialize error</string>
+    <string name="message.talk.success">Talk success</string>
+    <string name="message.talk.error">Talk error</string>
+</resources>

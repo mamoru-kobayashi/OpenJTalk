@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenJTalk</string>
+    <string name="button.talk">話す</string>
+    <string name="label.loading">初期化しています。しばらくおまちください...</string>
+    <string name="message.initialize.error">初期化に失敗しました。</string>
+    <string name="message.talk.error">発話に失敗しました。</string>
+    <string name="message.talk.success">発話終了</string>
+</resources>
