@@ -79,7 +79,7 @@ Java_jp_itplus_openjtalk_OpenJTalk_nativeSetAudioBufferSize(
 JNIEXPORT jboolean JNICALL
 Java_jp_itplus_openjtalk_OpenJTalk_nativeLoad(
 	JNIEnv* env, jclass cls, jlong instance,
-	jstring dn_mecab_obj, jstring fn_voice_obj);
+	jstring lang_obj, jstring dict_obj, jstring voice_obj);
 
 JNIEXPORT jboolean JNICALL
 Java_jp_itplus_openjtalk_OpenJTalk_nativeTalk(

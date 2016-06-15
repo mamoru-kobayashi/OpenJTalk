@@ -2,6 +2,7 @@ package jp.itplus.openjtalk.demo;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -20,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import java.io.File;
@@ -39,8 +41,11 @@ public final class Main {
     private static final String BUNDLE_KEY_MESSAGE = "msg";
     private static final String BUNDLE_KEY_DETAILS = "details";
     private static final int SAMPLING_FREQUENCY = 48000;
-    private static final int AUDIO_BUFFER_SIZE = 320;
+    private static final int AUDIO_BUFFER_SIZE = 6000;
 
+    public interface LanguageSelectListener {
+        void onLanguageSelected(String lang);
+    }
 
     public interface TalkInterface {
         void talk(String msg);
@@ -53,12 +58,13 @@ public final class Main {
     }
 
     enum State {
+        SELECT_LANG,
         INITIALIZING,
         INITIALIZE_ERROR,
         IDLE;
     }
 
-    public static class MainActivity extends Activity implements Handler.Callback, TalkInterface {
+    public static class MainActivity extends Activity implements Handler.Callback, TalkInterface, LanguageSelectListener {
 
         private enum Messages {
             INITIALIZE,
@@ -86,6 +92,7 @@ public final class Main {
         private State status;
         private Exception error;
         private TalkFinishedListener talkFinished;
+        private String lang;
 
         @Override
         public void onCreate(Bundle state) {
@@ -93,15 +100,39 @@ public final class Main {
             thread = new HandlerThread(MainActivity.class.getName());
             thread.start();
             handler = new Handler(thread.getLooper(), this);
-            handler.obtainMessage(Messages.INITIALIZE.value()).sendToTarget();
             ui = new Handler(Looper.getMainLooper(), this);
-            setStatus(State.INITIALIZING);
+            setStatus(State.SELECT_LANG);
         }
 
         @Override
         public void onDestroy() {
             super.onDestroy();
             handler.getLooper().quitSafely();
+        }
+
+        @Override
+        public void onBackPressed() {
+            switch (status) {
+                case IDLE:
+                    setStatus(State.SELECT_LANG);
+                    break;
+                case INITIALIZE_ERROR:
+                    setStatus(State.SELECT_LANG);
+                    break;
+                case INITIALIZING:
+                    break;
+                case SELECT_LANG:
+                    finish();
+                    break;
+            }
+        }
+
+
+        @Override
+        public void onLanguageSelected(String lang) {
+            this.lang = lang;
+            setStatus(State.INITIALIZING);
+            handler.obtainMessage(Messages.INITIALIZE.value()).sendToTarget();
         }
 
         @Override
@@ -162,14 +193,19 @@ public final class Main {
                     copyFile(mecab, am, "mecab", "sys.dic");
                     copyFile(mecab, am, "mecab", "unk.dic");
                     copyFile(voice, am, "voice", "nitech_jp_atr503_m001.htsvoice");
-                    prefs.edit().putLong("LAST_UPDATE_TIME", info.lastUpdateTime);
+                    copyFile(voice, am, "voice", "cmu_us_arctic_slt.htsvoice");
+                    prefs.edit().putLong("LAST_UPDATE_TIME", info.lastUpdateTime).commit();
                 } catch (IOException e) {
                     notifyInitialized(false, e);
                     return;
                 }
             }
             jtalk = new OpenJTalk();
-            boolean success = jtalk.load(mecab, new File(voice, "nitech_jp_atr503_m001.htsvoice"));
+            boolean success;
+            if (lang.equals("ja"))
+                success = jtalk.load("ja", mecab, new File(voice, "nitech_jp_atr503_m001.htsvoice"));
+            else
+                success = jtalk.load("en", null, new File(voice, "cmu_us_arctic_slt.htsvoice"));
             if (success) {
                 jtalk.setSamplingFrequency(SAMPLING_FREQUENCY);
                 jtalk.setAudioBufferSize(AUDIO_BUFFER_SIZE);
@@ -211,6 +247,9 @@ public final class Main {
             Bundle args = null;
             this.status = status;
             switch (status) {
+                case SELECT_LANG:
+                    fragment = new InitFragment();
+                    break;
                 case INITIALIZING:
                     fragment = new LoaderFragment();
                     break;
@@ -249,6 +288,33 @@ public final class Main {
                 os.close();
                 is.close();
             }
+        }
+    }
+
+    public static class InitFragment extends Fragment implements View.OnClickListener {
+
+        RadioGroup lang;
+        LanguageSelectListener listener;
+
+        @Override
+        public void onAttach(Activity context) {
+            super.onAttach(context);
+            if (context instanceof LanguageSelectListener)
+                listener = (LanguageSelectListener) context;
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle state) {
+            View view = inflater.inflate(R.layout.init, container, false);
+            lang = (RadioGroup) view.findViewById(R.id.lang);
+            view.findViewById(R.id.button_ok).setOnClickListener(this);
+            return view;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (listener != null)
+                listener.onLanguageSelected(lang.getCheckedRadioButtonId() == R.id.button_ja ? "ja" : "en");
         }
     }
 

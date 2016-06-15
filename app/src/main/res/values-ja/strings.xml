@@ -6,4 +6,7 @@
     <string name="message.initialize.error">初期化に失敗しました。</string>
     <string name="message.talk.error">発話に失敗しました。</string>
     <string name="message.talk.success">発話終了</string>
+    <string name="message.lang.en">英語</string>
+    <string name="message.lang.ja">日本語</string>
+    <string name="message.select.language">言語を選択してください。</string>
 </resources>

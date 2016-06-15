@@ -109,8 +109,8 @@ public class OpenJTalk implements Closeable {
     //  Operations
     //-----------------------------------------------------------------
 
-    public boolean load(File mecabDir, File voiceFile) {
-        return nativeLoad(instance, mecabDir.getAbsolutePath(), voiceFile.getAbsolutePath());
+    public boolean load(String lang, File dict, File voice) {
+        return nativeLoad(instance, lang, (dict != null) ? dict.getAbsolutePath() : null, voice.getAbsolutePath());
     }
 
     public boolean talk(String text) {
@@ -161,7 +161,7 @@ public class OpenJTalk implements Closeable {
 
     private native static void nativeSetAudioBufferSize(long instance, int value);
 
-    private native static boolean nativeLoad(long instance, String dirMecab, String fnVoice);
+    private native static boolean nativeLoad(long instance, String lang, String dirMecab, String fnVoice);
 
     private native static boolean nativeTalk(long instance, String text, String waveFile, String logFile);
 }

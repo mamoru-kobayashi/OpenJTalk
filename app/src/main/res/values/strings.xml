@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">OpenJTalk</string>
+    <string name="message.select.language">Select language</string>
+    <string name="message.lang.ja">Japanese</string>
+    <string name="message.lang.en">English</string>
     <string name="button.talk">Talk</string>
     <string name="label.loading">Loading...</string>
     <string name="message.initialize.error">Initialize error</string>
